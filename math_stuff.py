@@ -20,26 +20,38 @@ def get_mean_csv(csv_path): return [stats.mean(i) for i in [[line[i] for line in
 def get_mean(data): return [stats.mean(i) for i in data]
 
 
-def make_table_csv(csv_path):
+# PRINT A USABLE LATEX TABLE DIRECTLY FROM A .CSV FILE.
+# csv_path: Path to the.csv file that is to be made into a table.
+# columns: List of ints of the columns to be printed starting at 0. If left blank, all columns will be printed.
+# rows: List of ints of the rows to be printed starting at 0. If left blank, all rows will be printed.
+def make_table_csv(csv_path, columns=False, rows=False):
     data = get_data_csv(csv_path)
     name = csv_path.split('/')[-1].split('.')[0]
+
+    if not columns: columns = list(range(len(data)))
+    clmns = [data[n] for n in columns]
+
+    if not rows: rows = list(range(len(data[0])))
+
     head = f'\n{tab}'.join([
         '\\begin{table}[]',
         '\\centering',
-        '\\begin{tabular}{|' + 'c|'*len(data) + '}',
+        '\\begin{tabular}{|' + 'c|'*len(columns) + '}',
         tab + '\\hline'
         ])
+
     foot = tab*2 + f'\n{tab}'.join([
         '\\hline',
         '\\end{tabular}',
         '\\caption{' + name + '}',
         '\\label{tab:' + name + '}\n\\end{table}'
         ])
+
     print(head)
-    for n in range(len(data[0])):
+    for n in rows:
         cont = f'{tab*2}'
         first = True
-        for item in data:
+        for item in clmns:
             if first:
                 cont += f'{number}{item[n]}{end}'
                 first = False
@@ -49,6 +61,7 @@ def make_table_csv(csv_path):
     print(foot)
 
 
+# To be enhanced.
 def make_table(data):
     print('\\begin{table}[]\n    \\centering\n    \\begin{tabular}{|' + ''.join(['c|' for item in data]) + '}\n        \\hline')
     for n in range(len(data[0])):
