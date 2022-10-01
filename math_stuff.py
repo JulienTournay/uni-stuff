@@ -21,7 +21,7 @@ def get_mean(data): return [stats.mean(i) for i in data]
 
 
 # PRINT A USABLE LATEX TABLE DIRECTLY FROM A .CSV FILE.
-# csv_path: Path to the.csv file that is to be made into a table.
+# csv_path: Path to the .csv file that is to be made into a table.
 # columns: List of ints of the columns to be printed starting at 0. If left blank, all columns will be printed.
 # rows: List of ints of the rows to be printed starting at 0. If left blank, all rows will be printed.
 def make_table_csv(csv_path, columns=False, rows=False):
