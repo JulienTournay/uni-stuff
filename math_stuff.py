@@ -33,10 +33,11 @@ def standardabweichung(list): return num.sqrt(num.sum([(i-stats.mean(list))**2 f
 def get_data_csv(csv_path): return [[line[i] for line in num.recfromcsv(csv_path, delimiter=',')] for i in range(len(num.recfromcsv(csv_path, delimiter=',')[1]))]
 
 
-def get_mean_csv(csv_path): return [stats.mean(i) for i in [[line[i] for line in num.recfromcsv(csv_path, delimiter=',')] for i in range(len(num.recfromcsv(csv_path, delimiter=',')[1]))]]
-
-
-def get_mean_list(list): return [stats.mean(i) for i in list]
+# Get list of means for a list or .csv file.
+def get_mean(source):
+    if isinstance(source, str): data = get_data_csv(source)
+    elif isinstance(source, list): data = source
+    return [stats.mean(i) for i in data]
 
 
 # Rotate a list by 90 degrees. List must be square.
@@ -49,7 +50,7 @@ def rotate_list(list): return [[item[i] for item in list] for i in range(len(lis
 # rows: List of ints of the rows to be printed starting at 0. If left blank, all rows will be printed.
 # rotate: Bool. Will rotate table by 90 degrees if True.
 # from: List of length 2. First entry: format (e.g. .2 will put out '100.00' for an input of 100 or '23.98' for an input of 23.98658). Second entry: format type (e.g. 'f').
-def make_table(source, columns=False, rows=False, rotate=False, form=False, name='name'):
+def tabulate(source, columns=False, rows=False, rotate=False, form=False, name='name'):
 
     if isinstance(source, str):
         data = get_data_csv(source)
