@@ -17,21 +17,31 @@ def get_data_csv(csv_path): return [[line[i] for line in num.recfromcsv(csv_path
 def get_mean_csv(csv_path): return [stats.mean(i) for i in [[line[i] for line in num.recfromcsv(csv_path, delimiter=',')] for i in range(len(num.recfromcsv(csv_path, delimiter=',')[1]))]]
 
 
-def get_mean(data): return [stats.mean(i) for i in data]
+def get_mean_list(list): return [stats.mean(i) for i in list]
+
+
+# Rotate a list by 90 degrees. List must be square.
+def rotate_list(list): return [[item[i] for item in list] for i in range(len(list[0]))]
 
 
 # PRINT A USABLE LATEX TABLE DIRECTLY FROM A .CSV FILE.
 # csv_path: Path to the .csv file that is to be made into a table.
 # columns: List of ints of the columns to be printed starting at 0. If left blank, all columns will be printed.
 # rows: List of ints of the rows to be printed starting at 0. If left blank, all rows will be printed.
-def make_table_csv(csv_path, columns=False, rows=False):
+# rotate: Bool. Will rotate table by 90 degrees if True.
+# from: List of length 2. First entry: format (e.g. .2 will put out '100.00' for an input of 100 or '23.98' for an input of 23.98658). Second entry: format type (e.g. 'f').
+def make_table_csv(csv_path, columns=False, rows=False, rotate=False, form=False):
     data = get_data_csv(csv_path)
     name = csv_path.split('/')[-1].split('.')[0]
+
+    if rotate: data = rotate_list(data)
 
     if not columns: columns = list(range(len(data)))
     clmns = [data[n] for n in columns]
 
     if not rows: rows = list(range(len(data[0])))
+
+    if not form: form = [.2, 'f']
 
     head = f'\n{tab}'.join([
         '\\begin{table}[]',
@@ -53,33 +63,61 @@ def make_table_csv(csv_path, columns=False, rows=False):
         first = True
         for item in clmns:
             if first:
-                cont += f'{number}{item[n]}{end}'
+                cont += f'{number}{"{:{}{}}".format(item[n], form[0], form[1])}{end}'
                 first = False
-            else: cont += f' & {number}{item[n]}{end}'
+            else: cont += f' & {number}{"{:{}{}}".format(item[n], form[0], form[1])}{end}'
         cont += ' \\\\'
         print(cont)
     print(foot)
 
 
-# To be enhanced.
-def make_table(data):
-    print('\\begin{table}[]\n    \\centering\n    \\begin{tabular}{|' + ''.join(['c|' for item in data]) + '}\n        \\hline')
-    for n in range(len(data[0])):
+# PRINT A USABLE LATEX TABLE FROM A LIST.
+# csv_path: Path to the .csv file that is to be made into a table.
+# columns: List of ints of the columns to be printed starting at 0. If left blank, all columns will be printed.
+# rows: List of ints of the rows to be printed starting at 0. If left blank, all rows will be printed.
+# rotate: Bool. Will rotate table by 90 degrees if True.
+# from: List of length 2. First entry: format (e.g. .2 will put out '100.00' for an input of 100 or '23.98' for an input of 23.98658). Second entry: format type (e.g. 'f').
+def make_table_list(data, columns=False, rows=False, rotate=False, form=False):
+
+    if rotate: data = rotate_list(data)
+
+    if not columns: columns = list(range(len(data)))
+    clmns = [data[n] for n in columns]
+
+    if not rows: rows = list(range(len(data[0])))
+
+    if not form: form = [3.2, 'f']
+
+    def instancecheck(var):
+        if isinstance(var, str): return var
+        else: return f'{number}{"{:{}{}}".format(var, form[0], form[1])}{end}'
+
+    head = f'\n{tab}'.join([
+        '\\begin{table}[]',
+        '\\centering',
+        '\\begin{tabular}{|' + 'c|'*len(columns) + '}',
+        tab + '\\hline'
+        ])
+
+    foot = tab*2 + f'\n{tab}'.join([
+        '\\hline',
+        '\\end{tabular}',
+        '\\caption{name}',
+        '\\label{tab:name}\n\\end{table}'
+        ])
+
+    print(head)
+    for n in rows:
         cont = f'{tab*2}'
         first = True
-        for item in data:
+        for item in clmns:
             if first:
-                if isinstance(item[n], num.number): cont += f'{number}{item[n]:3.2f}{end}'
-                elif isinstance(item[n], sym.Float): cont += f'{number}{item[n]:3.2f}{end}'
-                else: cont += f'{item[n]}'
+                cont += instancecheck(item[n])
                 first = False
-            else:
-                if isinstance(item[n], num.number): cont += f' & {number}{item[n]:3.2f}{end}'
-                elif isinstance(item[n], sym.Float): cont += f' & {number}{item[n]:3.2f}{end}'
-                else: cont += f' & {item[n]}'
+            else: cont += f' & {instancecheck(item[n])}'
         cont += ' \\\\'
         print(cont)
-    print("        \\hline\n    \\end{tabular}\n    \\caption{Caption}\n    \\label{tab:my_label}\n\\end{table}")
+    print(foot)
 
 
 def gauss(formula, vars, space=1, other_vars=[]):
